@@ -20,6 +20,7 @@ import dev.terralense.config.TerraLenseConfig;
 import dev.terralense.core.Log;
 import dev.terralense.core.MinimapService;
 import dev.terralense.core.ReloadResult;
+import dev.terralense.core.UpdateChecker;
 import dev.terralense.hud.FullscreenMapView;
 import dev.terralense.hud.GlyphHudRenderer;
 import dev.terralense.map.render.DefaultTerrainRenderer;
@@ -80,6 +81,7 @@ public final class TerraLensePlugin extends JavaPlugin {
     private ResourcePackService packService;
     private DefaultMarkerRegistry markerRegistry;
     private PlatformScheduler.TaskHandle updateTask;
+    private UpdateChecker updateChecker;
 
     private PlayerMarkerProvider playerMarkers;
     private WaypointMarkerProvider waypointMarkers;
@@ -121,7 +123,7 @@ public final class TerraLensePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new PlayerListener(sessions, terrainService, dataStore, waypointMarkers,
                         deathMarkers, packService, scheduler, this::config,
-                        minimapService.delivery()), this);
+                        minimapService.delivery(), () -> updateChecker), this);
         getServer().getPluginManager().registerEvents(
                 new PackStatusListener(this::config, packService, log), this);
         getServer().getPluginManager().registerEvents(
@@ -138,6 +140,11 @@ public final class TerraLensePlugin extends JavaPlugin {
                         ? " (active)"
                         : " (inactive: " + packService.inactiveReason() + ")"));
         log.info("TerraLense enabled.");
+
+        this.updateChecker = new UpdateChecker(getPluginMeta().getVersion(), log);
+        if (config.updateCheck()) {
+            updateChecker.checkAsync();
+        }
     }
 
     /** Opens the database, falling back to an in-memory store on failure. */
@@ -254,7 +261,8 @@ public final class TerraLensePlugin extends JavaPlugin {
                 new DeathCommand(deathMarkers),
                 new StatusCommand(this::config, sessions, terrainCache, renderPipeline, metrics,
                         packService, dataStore, database, platform,
-                        getPluginMeta().getVersion(), getServer().getMinecraftVersion()),
+                        getPluginMeta().getVersion(), getServer().getMinecraftVersion(),
+                        () -> updateChecker),
                 new DebugCommand(log, metrics, sessions, storage, markerRegistry),
                 new ReloadCommand(this::reload));
 
@@ -326,6 +334,9 @@ public final class TerraLensePlugin extends JavaPlugin {
                 updateTask.cancel();
             }
             startUpdateLoop();
+        }
+        if (updated.updateCheck() && !previous.updateCheck() && updateChecker != null) {
+            updateChecker.checkAsync();
         }
         return ReloadResult.success(packChanged, notes);
     }

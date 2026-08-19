@@ -21,6 +21,8 @@ public final class TerraLenseConfig {
     private final boolean enabled;
     private final int updateIntervalTicks;
     private final boolean joinMessage;
+    private final boolean updateCheck;
+    private final boolean updateNotifyAdmins;
 
     private final boolean hudEnabled;
     private final HudPosition hudPosition;
@@ -66,6 +68,8 @@ public final class TerraLenseConfig {
         this.enabled = b.enabled;
         this.updateIntervalTicks = b.updateIntervalTicks;
         this.joinMessage = b.joinMessage;
+        this.updateCheck = b.updateCheck;
+        this.updateNotifyAdmins = b.updateNotifyAdmins;
         this.hudEnabled = b.hudEnabled;
         this.hudPosition = b.hudPosition;
         this.hudShape = b.hudShape;
@@ -114,6 +118,8 @@ public final class TerraLenseConfig {
         b.updateIntervalTicks = v.clampInt("general.update-interval-ticks",
                 yaml.getInt("general.update-interval-ticks", 2), 1, 100, 2);
         b.joinMessage = yaml.getBoolean("general.join-message", true);
+        b.updateCheck = yaml.getBoolean("general.update-check.enabled", true);
+        b.updateNotifyAdmins = yaml.getBoolean("general.update-check.notify-admins", true);
         b.debug = yaml.getBoolean("general.debug", false);
 
         b.hudEnabled = yaml.getBoolean("hud.enabled", true);
@@ -121,7 +127,7 @@ public final class TerraLenseConfig {
                 HudPosition.fromConfig(yaml.getString("hud.position")), HudPosition.TOP_RIGHT);
         b.hudShape = v.enumValue("hud.shape", yaml.getString("hud.shape"),
                 HudShape.fromConfig(yaml.getString("hud.shape")), HudShape.CIRCLE);
-        // 96 gives 4px cells at the fixed 24x24 grid: readable without dominating\n // the screen.
+        // 96 gives 4px cells at the fixed 24x24 grid: readable without dominating the screen.
         b.hudSize = v.clampInt("hud.size", yaml.getInt("hud.size", 96), 32, 168, 96);
         b.hudMargin = v.clampInt("hud.margin", yaml.getInt("hud.margin", 8), 0, 128, 8);
 
@@ -138,7 +144,7 @@ public final class TerraLenseConfig {
             b.minZoom = b.maxZoom;
             b.maxZoom = swap;
         }
-        // 8 blocks/cell covers 192x192 blocks at the 24-cell grid: wide coverage\n // without
+        // 8 blocks/cell covers 192x192 blocks at the 24-cell grid: wide coverage without
         // needing more cells.
         b.defaultZoom = v.clampInt("map.zoom.default", yaml.getInt("map.zoom.default", 8),
                 b.minZoom, b.maxZoom, Math.clamp(8, b.minZoom, b.maxZoom));
@@ -239,6 +245,16 @@ public final class TerraLenseConfig {
 
     public boolean joinMessage() {
         return joinMessage;
+    }
+
+    /** Whether to check SpigotMC for a newer version on startup. */
+    public boolean updateCheck() {
+        return updateCheck;
+    }
+
+    /** Whether operators are told about an available update when they join. */
+    public boolean updateNotifyAdmins() {
+        return updateNotifyAdmins;
     }
 
     public boolean hudEnabled() {
@@ -394,6 +410,8 @@ public final class TerraLenseConfig {
         private boolean enabled = true;
         private int updateIntervalTicks = 2;
         private boolean joinMessage = true;
+        private boolean updateCheck = true;
+        private boolean updateNotifyAdmins = true;
         private boolean hudEnabled = true;
         private HudPosition hudPosition = HudPosition.TOP_RIGHT;
         private HudShape hudShape = HudShape.CIRCLE;

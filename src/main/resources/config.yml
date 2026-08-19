@@ -25,6 +25,15 @@ general:
   # Verbose diagnostics in console. Also toggleable with /terralense debug.
   debug: false
 
+  # Check SpigotMC for a newer version on startup.
+  #
+  # Runs off the main thread and never delays startup. If the check fails it stays
+  # quiet; nothing is ever downloaded or installed automatically.
+  update-check:
+    enabled: true
+    # Also tell operators (terralense.admin) when they join.
+    notify-admins: true
+
 hud:
   enabled: true
   # top-left, top-right, bottom-left, bottom-right

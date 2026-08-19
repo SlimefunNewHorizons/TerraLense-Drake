@@ -3,6 +3,7 @@ package dev.terralense.player;
 import dev.terralense.compatibility.PlatformScheduler;
 import dev.terralense.config.TerraLenseConfig;
 import dev.terralense.core.Messages;
+import dev.terralense.core.UpdateChecker;
 import dev.terralense.hud.HudDelivery;
 import dev.terralense.marker.DeathMarkerProvider;
 import dev.terralense.marker.WaypointMarkerProvider;
@@ -39,6 +40,7 @@ public final class PlayerListener implements Listener {
     private final PlatformScheduler scheduler;
     private final Supplier<TerraLenseConfig> config;
     private final HudDelivery hudDelivery;
+    private final Supplier<UpdateChecker> updateChecker;
 
     public PlayerListener(SessionManager sessions,
                           TerrainService terrain,
@@ -48,8 +50,10 @@ public final class PlayerListener implements Listener {
                           ResourcePackService packService,
                           PlatformScheduler scheduler,
                           Supplier<TerraLenseConfig> config,
-                          HudDelivery hudDelivery) {
+                          HudDelivery hudDelivery,
+                          Supplier<UpdateChecker> updateChecker) {
         this.hudDelivery = hudDelivery;
+        this.updateChecker = updateChecker;
         this.sessions = sessions;
         this.terrain = terrain;
         this.store = store;
@@ -85,6 +89,22 @@ public final class PlayerListener implements Listener {
                 player.sendMessage(Messages.info("Minimap ready. Use /terralense for controls."));
             }
         }));
+
+        notifyUpdate(player);
+    }
+
+    /** Tells operators about a pending update, once per join. */
+    private void notifyUpdate(Player player) {
+        if (!config.get().updateNotifyAdmins() || !player.hasPermission("terralense.admin")) {
+            return;
+        }
+        UpdateChecker checker = updateChecker.get();
+        if (checker == null || !checker.updateAvailable()) {
+            return;
+        }
+        player.sendMessage(Messages.warn("TerraLense " + checker.latestVersion()
+                + " is available (running " + checker.currentVersion() + ")."));
+        player.sendMessage(Messages.prefixed(Messages.link(UpdateChecker.RESOURCE_URL)));
     }
 
     private void applyStored(MinimapSession session, PlayerPreferences stored) {

@@ -3,6 +3,7 @@ package dev.terralense.command;
 import dev.terralense.compatibility.ServerPlatform;
 import dev.terralense.config.TerraLenseConfig;
 import dev.terralense.core.Messages;
+import dev.terralense.core.UpdateChecker;
 import dev.terralense.map.render.RenderPipeline;
 import dev.terralense.performance.Metrics;
 import dev.terralense.player.SessionManager;
@@ -28,6 +29,7 @@ public final class StatusCommand implements SubCommand {
     private final ServerPlatform platform;
     private final String pluginVersion;
     private final String minecraftVersion;
+    private final Supplier<UpdateChecker> updateChecker;
 
     public StatusCommand(Supplier<TerraLenseConfig> config,
                          SessionManager sessions,
@@ -39,8 +41,10 @@ public final class StatusCommand implements SubCommand {
                          Database database,
                          ServerPlatform platform,
                          String pluginVersion,
-                         String minecraftVersion) {
+                         String minecraftVersion,
+                         Supplier<UpdateChecker> updateChecker) {
         this.config = config;
+        this.updateChecker = updateChecker;
         this.sessions = sessions;
         this.cache = cache;
         this.pipeline = pipeline;
@@ -82,8 +86,13 @@ public final class StatusCommand implements SubCommand {
     public void execute(CommandSender sender, String[] args) {
         TerraLenseConfig current = config.get();
 
+        UpdateChecker checker = updateChecker.get();
+        boolean outdated = checker != null && checker.updateAvailable();
+
         sender.sendMessage(Messages.info("Status"));
-        sender.sendMessage(Messages.detailLine("Version", pluginVersion));
+        sender.sendMessage(Messages.detailLine("Version", outdated
+                ? pluginVersion + " (update available: " + checker.latestVersion() + ")"
+                : pluginVersion));
         sender.sendMessage(Messages.detailLine("Platform",
                 platform.displayName() + " " + minecraftVersion));
         sender.sendMessage(Messages.detailLine("Enabled", Boolean.toString(current.isEnabled())));
@@ -130,6 +139,11 @@ public final class StatusCommand implements SubCommand {
         } else {
             sender.sendMessage(Messages.warn("Storage unavailable: waypoints and preferences "
                     + "are session-only and will not survive a restart."));
+        }
+        if (outdated) {
+            sender.sendMessage(Messages.warn("TerraLense " + checker.latestVersion()
+                    + " is available."));
+            sender.sendMessage(Messages.prefixed(Messages.link(UpdateChecker.RESOURCE_URL)));
         }
     }
 

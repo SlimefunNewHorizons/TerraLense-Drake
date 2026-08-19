@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Startup update check against SpigotMC. Logs a one-line notice when a newer
+  version is published, and optionally tells operators when they join. Runs off
+  the main thread, never delays startup, and stays quiet on failure. Configurable
+  under `general.update-check`.
+- `/tl status` reports the available version when the server is behind.
+
+### Fixed
+
+- Two comments contained a literal `\n` from an earlier formatting pass.
+
 ## 0.1.0
 
 First release.

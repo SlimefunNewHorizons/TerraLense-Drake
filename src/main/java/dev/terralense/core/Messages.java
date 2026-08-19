@@ -58,4 +58,11 @@ public final class Messages {
                 .append(Component.text(value, BODY))
                 .build();
     }
+
+    /** A clickable URL that also copies on hover. */
+    public static Component link(String url) {
+        return Component.text(url, ACCENT, TextDecoration.UNDERLINED)
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.openUrl(url))
+                .hoverEvent(Component.text("Open in browser", BODY));
+    }
 }

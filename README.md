@@ -24,6 +24,7 @@ launcher and the map is just there.
 - **Per-player settings** for zoom, orientation, visibility and horizontal position
 - **Marker API** for other plugins to draw on the map
 - **Async rendering** with no world scanning on the main thread
+- **Update notice** on startup when a newer version is on Spigot
 
 ## Requirements
 
@@ -128,7 +129,16 @@ map:
 resource-pack:
   self-host:
     public-address: ''  # set this for a public server
+
+general:
+  update-check:
+    enabled: true       # check Spigot for a newer version on startup
+    notify-admins: true # also tell operators when they join
 ```
+
+The update check runs off the main thread, never delays startup, and stays quiet
+if it fails. Nothing is downloaded or installed automatically. Set
+`update-check.enabled: false` to turn it off entirely.
 
 Every option is documented inline in `config.yml`. Values out of range get
 clamped and logged rather than breaking startup, and `/tl reload` applies changes
