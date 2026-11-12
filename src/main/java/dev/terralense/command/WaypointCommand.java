@@ -2,6 +2,7 @@ package dev.terralense.command;
 
 import dev.terralense.api.marker.MarkerVisibility;
 import dev.terralense.compatibility.PlatformScheduler;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.marker.WaypointMarkerProvider;
 import dev.terralense.storage.Waypoint;
@@ -51,14 +52,14 @@ public final class WaypointCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Manage your waypoints.";
+        return Lang.t("wp-desc");
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         if (args.length == 0) {
-            sender.sendMessage(Messages.error("Usage: /terralense " + usage()));
+            sender.sendMessage(Messages.error(Lang.t("wp-usage", usage())));
             return;
         }
 
@@ -67,28 +68,25 @@ public final class WaypointCommand implements SubCommand {
             case "remove", "delete", "del" -> remove(player, args);
             case "list" -> list(player);
             case "tp", "teleport" -> teleport(player, args);
-            default -> sender.sendMessage(Messages.error("Unknown action '" + args[0]
-                    + "'. Use add, remove, list or tp."));
+            default -> sender.sendMessage(Messages.error(Lang.t("wp-unknown", args[0])));
         }
     }
 
     private void add(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(Messages.error("Usage: /terralense waypoint add <name>"));
+            player.sendMessage(Messages.error(Lang.t("wp-usage-add")));
             return;
         }
         String name = args[1];
         if (!Waypoint.isValidName(name)) {
-            player.sendMessage(Messages.error("Waypoint names may use letters, numbers, "
-                    + "underscores and hyphens, up to " + Waypoint.MAX_NAME_LENGTH
-                    + " characters."));
+            player.sendMessage(Messages.error(Lang.t("wp-bad-name", Waypoint.MAX_NAME_LENGTH)));
             return;
         }
 
         Location location = player.getLocation();
         if (!Waypoint.isValidPosition(location.getBlockX(), location.getBlockY(),
                 location.getBlockZ())) {
-            player.sendMessage(Messages.error("A waypoint cannot be saved at this position."));
+            player.sendMessage(Messages.error(Lang.t("wp-bad-position")));
             return;
         }
 
@@ -103,25 +101,23 @@ public final class WaypointCommand implements SubCommand {
             }
             switch (outcome) {
                 case CREATED -> {
-                    player.sendMessage(Messages.success("Waypoint '" + name + "' saved."));
+                    player.sendMessage(Messages.success(Lang.t("wp-saved", name)));
                     if (!waypoints.isPersistent()) {
-                        player.sendMessage(Messages.warn("Storage is unavailable, so this "
-                                + "waypoint will be lost when the server restarts."));
+                        player.sendMessage(Messages.warn(Lang.t("wp-not-persistent")));
                     }
                 }
                 case DUPLICATE -> player.sendMessage(
-                        Messages.warn("You already have a waypoint called '" + name + "'."));
-                case LIMIT_REACHED -> player.sendMessage(Messages.warn("You have reached the "
-                        + "limit of " + WaypointService.MAX_PER_PLAYER + " waypoints."));
+                        Messages.warn(Lang.t("wp-duplicate", name)));
+                case LIMIT_REACHED -> player.sendMessage(Messages.warn(Lang.t("wp-limit", WaypointService.MAX_PER_PLAYER)));
                 case FAILED -> player.sendMessage(
-                        Messages.error("Could not save that waypoint."));
+                        Messages.error(Lang.t("wp-save-failed")));
             }
         }));
     }
 
     private void remove(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(Messages.error("Usage: /terralense waypoint remove <name>"));
+            player.sendMessage(Messages.error(Lang.t("wp-usage-remove")));
             return;
         }
         String name = args[1];
@@ -131,12 +127,11 @@ public final class WaypointCommand implements SubCommand {
                         return;
                     }
                     if (error != null) {
-                        player.sendMessage(Messages.error("Could not remove that waypoint."));
+                        player.sendMessage(Messages.error(Lang.t("wp-remove-failed")));
                     } else if (removed) {
-                        player.sendMessage(Messages.success("Waypoint '" + name + "' removed."));
+                        player.sendMessage(Messages.success(Lang.t("wp-removed", name)));
                     } else {
-                        player.sendMessage(Messages.warn("You have no waypoint called '"
-                                + name + "'."));
+                        player.sendMessage(Messages.warn(Lang.t("wp-missing", name)));
                     }
                 }));
     }
@@ -148,31 +143,28 @@ public final class WaypointCommand implements SubCommand {
                         return;
                     }
                     if (error != null) {
-                        player.sendMessage(Messages.error("Could not read your waypoints."));
+                        player.sendMessage(Messages.error(Lang.t("wp-list-failed")));
                         return;
                     }
                     if (found.isEmpty()) {
-                        player.sendMessage(Messages.info("You have no waypoints yet. "
-                                + "Use /terralense waypoint add <name>."));
+                        player.sendMessage(Messages.info(Lang.t("wp-empty")));
                         return;
                     }
-                    player.sendMessage(Messages.info("Your waypoints (" + found.size()
-                            + "/" + WaypointService.MAX_PER_PLAYER + "):"));
+                    player.sendMessage(Messages.info(Lang.t("wp-list-title", found.size(), WaypointService.MAX_PER_PLAYER)));
                     for (Waypoint waypoint : found) {
                         player.sendMessage(Messages.detailLine(waypoint.name(),
-                                waypoint.x() + ", " + waypoint.y() + ", " + waypoint.z()
-                                        + " in " + worldName(player, waypoint.worldId())));
+                                Lang.t("wp-list-line", waypoint.x(), waypoint.y(), waypoint.z(), worldName(player, waypoint.worldId()))));
                     }
                 }));
     }
 
     private void teleport(Player player, String[] args) {
         if (!player.hasPermission("terralense.waypoint.teleport")) {
-            player.sendMessage(Messages.error("You do not have permission to teleport."));
+            player.sendMessage(Messages.error(Lang.t("wp-tp-denied")));
             return;
         }
         if (args.length < 2) {
-            player.sendMessage(Messages.error("Usage: /terralense waypoint tp <name>"));
+            player.sendMessage(Messages.error(Lang.t("wp-usage-tp")));
             return;
         }
         String name = args[1];
@@ -183,12 +175,11 @@ public final class WaypointCommand implements SubCommand {
                         return;
                     }
                     if (error != null) {
-                        player.sendMessage(Messages.error("Could not read that waypoint."));
+                        player.sendMessage(Messages.error(Lang.t("wp-read-failed")));
                         return;
                     }
                     if (found.isEmpty()) {
-                        player.sendMessage(Messages.warn("You have no waypoint called '"
-                                + name + "'."));
+                        player.sendMessage(Messages.warn(Lang.t("wp-missing", name)));
                         return;
                     }
                     performTeleport(player, found.get());
@@ -198,7 +189,7 @@ public final class WaypointCommand implements SubCommand {
     private void performTeleport(Player player, Waypoint waypoint) {
         World world = player.getServer().getWorld(waypoint.worldId());
         if (world == null) {
-            player.sendMessage(Messages.error("That waypoint's world is not loaded."));
+            player.sendMessage(Messages.error(Lang.t("wp-world-unloaded")));
             return;
         }
         // Centre on the block and keep the player's facing, so arriving does not drop them in a
@@ -214,16 +205,16 @@ public final class WaypointCommand implements SubCommand {
                 return;
             }
             if (success) {
-                player.sendMessage(Messages.success("Teleported to '" + waypoint.name() + "'."));
+                player.sendMessage(Messages.success(Lang.t("wp-teleported", waypoint.name())));
             } else {
-                player.sendMessage(Messages.error("That teleport was blocked."));
+                player.sendMessage(Messages.error(Lang.t("wp-tp-blocked")));
             }
         }));
     }
 
     private String worldName(Player player, UUID worldId) {
         World world = player.getServer().getWorld(worldId);
-        return world == null ? "an unloaded world" : world.getName();
+        return world == null ? Lang.t("unloaded-world") : world.getName();
     }
 
     @Override

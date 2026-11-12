@@ -1,5 +1,6 @@
 package dev.terralense.command;
 
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.hud.HudDelivery;
 import dev.terralense.player.MinimapSession;
@@ -32,12 +33,19 @@ public final class ToggleCommand implements SubCommand {
 
     @Override
     public String usage() {
-        return "toggle";
+        return "toggle [on|off]";
     }
 
     @Override
     public String description() {
-        return "Show or hide your minimap.";
+        return Lang.t("toggle-desc");
+    }
+
+    @Override
+    public java.util.List<String> complete(CommandSender sender, String[] args) {
+        return args.length == 1
+                ? java.util.List.of("on", "off").stream().filter(o -> o.startsWith(args[0])).toList()
+                : java.util.List.of();
     }
 
     @Override
@@ -45,21 +53,32 @@ public final class ToggleCommand implements SubCommand {
         Player player = (Player) sender;
         MinimapSession session = sessions.session(player.getUniqueId());
         if (session == null) {
-            sender.sendMessage(Messages.error("Your minimap session is not ready yet."));
+            sender.sendMessage(Messages.error(Lang.t("not-ready")));
             return;
         }
         boolean enabled = !session.preferences().minimapEnabled();
+        if (args.length > 0) {
+            switch (args[0].toLowerCase(java.util.Locale.ROOT)) {
+                case "on" -> enabled = true;
+                case "off" -> enabled = false;
+                default -> {
+                    sender.sendMessage(Messages.error(Lang.t("toggle-usage", "mapa")));
+                    return;
+                }
+            }
+        }
         session.preferences().setMinimapEnabled(enabled);
         session.markTerrainDirty();
         store.savePreferences(player.getUniqueId(), session.preferences());
 
         if (enabled) {
-            sender.sendMessage(Messages.success("Minimap enabled."));
+            sender.sendMessage(Messages.success(Lang.t("toggle-on")));
+            sender.sendMessage(Messages.warn(Lang.t("client-warning")));
         } else {
             // Clear both surfaces immediately rather than leaving a stale frame or an orphaned boss
             // bar on screen.
             delivery.hide(player);
-            sender.sendMessage(Messages.info("Minimap disabled."));
+            sender.sendMessage(Messages.info(Lang.t("toggle-off")));
         }
     }
 }

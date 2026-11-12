@@ -1,5 +1,6 @@
 package dev.terralense.command;
 
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.marker.DeathMarkerProvider;
 import java.util.List;
@@ -32,7 +33,7 @@ public final class DeathCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Show or clear your last death location.";
+        return Lang.t("death-desc");
     }
 
     @Override
@@ -41,26 +42,26 @@ public final class DeathCommand implements SubCommand {
 
         if (args.length > 0 && args[0].equalsIgnoreCase("clear")) {
             if (deaths.clear(player.getUniqueId())) {
-                sender.sendMessage(Messages.success("Death marker cleared."));
+                sender.sendMessage(Messages.success(Lang.t("death-cleared")));
             } else {
-                sender.sendMessage(Messages.info("You have no death marker."));
+                sender.sendMessage(Messages.info(Lang.t("death-none-marker")));
             }
             return;
         }
 
         deaths.current(player.getUniqueId()).ifPresentOrElse(location -> {
             org.bukkit.World world = player.getServer().getWorld(location.worldId());
-            String worldName = world == null ? "an unloaded world" : world.getName();
-            sender.sendMessage(Messages.detail("Last death",
-                    location.x() + ", " + location.y() + ", " + location.z() + " in " + worldName));
+            String worldName = world == null ? Lang.t("unloaded-world") : world.getName();
+            sender.sendMessage(Messages.detail(Lang.t("death-last"),
+                    Lang.t("death-where", location.x(), location.y(), location.z(), worldName)));
 
             if (world != null && world.getUID().equals(player.getWorld().getUID())) {
                 int distance = (int) Math.round(Math.hypot(
                         location.x() - player.getLocation().getBlockX(),
                         location.z() - player.getLocation().getBlockZ()));
-                sender.sendMessage(Messages.detail("Distance", distance + " blocks away"));
+                sender.sendMessage(Messages.detail(Lang.t("death-distance"), Lang.t("death-distance-value", distance)));
             }
-        }, () -> sender.sendMessage(Messages.info("You have no recorded death location.")));
+        }, () -> sender.sendMessage(Messages.info(Lang.t("death-none"))));
     }
 
     @Override

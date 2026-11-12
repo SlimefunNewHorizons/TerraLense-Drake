@@ -96,6 +96,7 @@ public final class TerraLensePlugin extends JavaPlugin {
 
         saveDefaultConfig();
         this.config = loadConfigSnapshot();
+        dev.terralense.core.Lang.select(config.language());
         log.setDebug(config.debug());
 
         log.info("TerraLense " + getPluginMeta().getVersion() + " starting.");
@@ -275,6 +276,20 @@ public final class TerraLensePlugin extends JavaPlugin {
         TerraLenseCommand executor = new TerraLenseCommand(new ArrayList<>(subCommands));
         command.setExecutor(executor);
         command.setTabCompleter(executor);
+
+        PluginCommand mapa = getCommand("mapa");
+        if (mapa != null) {
+            dev.terralense.command.MapAlias alias = dev.terralense.command.MapAlias.map(executor);
+            mapa.setExecutor(alias);
+            mapa.setTabCompleter(alias);
+        }
+        PluginCommand wp = getCommand("wp");
+        if (wp != null) {
+            dev.terralense.command.MapAlias alias =
+                    dev.terralense.command.MapAlias.waypoints(executor);
+            wp.setExecutor(alias);
+            wp.setTabCompleter(alias);
+        }
     }
 
     private void startUpdateLoop() {
@@ -316,6 +331,7 @@ public final class TerraLensePlugin extends JavaPlugin {
         boolean packChanged = packService.requiresRegeneration(updated);
 
         this.config = updated;
+        dev.terralense.core.Lang.select(updated.language());
         log.setDebug(updated.debug());
 
         playerMarkers.applyConfig(updated);

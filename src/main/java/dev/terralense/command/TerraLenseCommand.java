@@ -1,5 +1,7 @@
 package dev.terralense.command;
 
+import dev.terralense.compatibility.BedrockGuard;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,7 @@ public final class TerraLenseCommand implements CommandExecutor, TabCompleter {
                              Command command,
                              String label,
                              String[] args) {
-        if (args.length == 0) {
+        if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
             sendHelp(sender, label);
             return true;
         }
@@ -30,16 +32,22 @@ public final class TerraLenseCommand implements CommandExecutor, TabCompleter {
         String name = args[0].toLowerCase(Locale.ROOT);
         SubCommand target = find(name);
         if (target == null) {
-            sender.sendMessage(Messages.error("Unknown subcommand '" + args[0]
-                    + "'. Try /" + label + " help."));
+            sender.sendMessage(Messages.error(Lang.t("unknown-sub", args[0], label)));
             return true;
         }
         if (!target.permission().isEmpty() && !sender.hasPermission(target.permission())) {
-            sender.sendMessage(Messages.error("You do not have permission to do that."));
+            sender.sendMessage(Messages.error(Lang.t("no-permission")));
             return true;
         }
         if (target.playerOnly() && !(sender instanceof org.bukkit.entity.Player)) {
-            sender.sendMessage(Messages.error("That command can only be used by a player."));
+            sender.sendMessage(Messages.error(Lang.t("player-only")));
+            return true;
+        }
+
+        if (sender instanceof org.bukkit.entity.Player player
+                && BedrockGuard.isBedrock(player.getUniqueId())) {
+            // Bedrock ignores the Java resource pack; the map would be a row of empty boxes.
+            sender.sendMessage(Messages.error(Lang.t("bedrock-blocked")));
             return true;
         }
 
@@ -49,7 +57,7 @@ public final class TerraLenseCommand implements CommandExecutor, TabCompleter {
             target.execute(sender, subArgs);
         } catch (RuntimeException ex) {
             // A command must never surface a raw stack trace to a player.
-            sender.sendMessage(Messages.error("That command failed. Check the console for details."));
+            sender.sendMessage(Messages.error(Lang.t("command-failed")));
             throw ex;
         }
         return true;
@@ -101,7 +109,7 @@ public final class TerraLenseCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(Messages.info("Minimap commands:"));
+        sender.sendMessage(Messages.info(Lang.t("help-title")));
         for (SubCommand sub : visibleTo(sender)) {
             sender.sendMessage(Messages.detailLine("/" + label + " " + sub.usage(),
                     sub.description()));

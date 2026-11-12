@@ -1,6 +1,7 @@
 package dev.terralense.command;
 
 import dev.terralense.core.MinimapService;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import java.util.List;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public final class MapCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Show a large map of the surrounding area.";
+        return Lang.t("map-desc");
     }
 
     @Override
@@ -48,12 +49,11 @@ public final class MapCommand implements SubCommand {
             try {
                 zoom = Integer.parseInt(args[0]);
             } catch (NumberFormatException ex) {
-                player.sendMessage(Messages.error("'" + args[0] + "' is not a number."));
+                player.sendMessage(Messages.error(Lang.t("not-a-number", args[0])));
                 return;
             }
             if (zoom < 1 || zoom > 16) {
-                player.sendMessage(Messages.error("Map zoom must be between 1 and 16 "
-                        + "blocks per cell."));
+                player.sendMessage(Messages.error(Lang.t("map-range")));
                 return;
             }
         }

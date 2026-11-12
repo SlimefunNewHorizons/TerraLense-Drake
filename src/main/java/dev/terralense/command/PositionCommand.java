@@ -1,6 +1,7 @@
 package dev.terralense.command;
 
 import dev.terralense.config.TerraLenseConfig;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.player.MinimapSession;
 import dev.terralense.player.SessionManager;
@@ -53,7 +54,7 @@ public final class PositionCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Move the minimap left or right on your screen.";
+        return Lang.t("position-desc");
     }
 
     @Override
@@ -61,14 +62,13 @@ public final class PositionCommand implements SubCommand {
         Player player = (Player) sender;
         MinimapSession session = sessions.session(player.getUniqueId());
         if (session == null) {
-            sender.sendMessage(Messages.error("Your minimap session is not ready yet."));
+            sender.sendMessage(Messages.error(Lang.t("not-ready")));
             return;
         }
         if (args.length == 0) {
-            sender.sendMessage(Messages.detail("Map offset",
-                    session.preferences().offsetNudge() + " cells"));
-            sender.sendMessage(Messages.info("Use position corner <your GUI scale> to snap "
-                    + "to the left edge, then left or right to fine-tune."));
+            sender.sendMessage(Messages.detail(Lang.t("position-offset-label"),
+                    Lang.t("position-offset-value", session.preferences().offsetNudge())));
+            sender.sendMessage(Messages.info(Lang.t("position-hint")));
             return;
         }
 
@@ -81,22 +81,18 @@ public final class PositionCommand implements SubCommand {
             case "corner", "topleft", "edge" -> {
                 Integer scale = parseGuiScale(args);
                 if (scale == null) {
-                    sender.sendMessage(Messages.error("Tell me your GUI scale: "
-                            + "/terralense position corner <1-4>"));
-                    sender.sendMessage(Messages.info("It is in Options, Video Settings, "
-                            + "GUI Scale. 'Auto' shows the number in brackets."));
+                    sender.sendMessage(Messages.error(Lang.t("position-need-scale")));
+                    sender.sendMessage(Messages.info(Lang.t("position-need-scale-hint")));
                     return;
                 }
                 updated = leftEdgeOffset(scale);
-                sender.sendMessage(Messages.info("Snapped to the left edge for GUI scale "
-                        + scale + ". Fine-tune with /terralense position left or right."));
+                sender.sendMessage(Messages.info(Lang.t("position-snapped", scale)));
             }
             default -> {
                 try {
                     updated = Integer.parseInt(args[0]);
                 } catch (NumberFormatException ex) {
-                    sender.sendMessage(Messages.error("Use corner <1-4>, left, right, "
-                            + "center, or a number of cells."));
+                    sender.sendMessage(Messages.error(Lang.t("position-bad")));
                     return;
                 }
             }
@@ -107,8 +103,8 @@ public final class PositionCommand implements SubCommand {
         session.markHudDirty();
 
         int applied = session.preferences().offsetNudge();
-        sender.sendMessage(Messages.success("Map offset: " + applied + " cells."
-                + (applied == updated ? "" : " (clamped)")));
+        sender.sendMessage(Messages.success(Lang.t("position-applied", applied,
+                applied == updated ? "" : Lang.t("position-clamped"))));
     }
 
     /** Cell offset that puts the map's left edge near the screen's left edge. */

@@ -1,6 +1,7 @@
 package dev.terralense.command;
 
 import dev.terralense.config.TerraLenseConfig;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.player.MinimapSession;
 import dev.terralense.player.SessionManager;
@@ -42,41 +43,38 @@ public final class ZoomCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Set how many blocks each map cell covers.";
+        return Lang.t("zoom-desc");
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         TerraLenseConfig current = config.get();
         if (args.length < 1) {
-            sender.sendMessage(Messages.error("Usage: /terralense zoom <"
-                    + current.minZoom() + "-" + current.maxZoom() + ">"));
+            sender.sendMessage(Messages.error(Lang.t("zoom-usage", current.minZoom(), current.maxZoom())));
             return;
         }
         int requested;
         try {
             requested = Integer.parseInt(args[0]);
         } catch (NumberFormatException ex) {
-            sender.sendMessage(Messages.error("'" + args[0] + "' is not a number."));
+            sender.sendMessage(Messages.error(Lang.t("not-a-number", args[0])));
             return;
         }
         if (requested < current.minZoom() || requested > current.maxZoom()) {
-            sender.sendMessage(Messages.error("Zoom must be between " + current.minZoom()
-                    + " and " + current.maxZoom() + "."));
+            sender.sendMessage(Messages.error(Lang.t("zoom-range", current.minZoom(), current.maxZoom())));
             return;
         }
 
         Player player = (Player) sender;
         MinimapSession session = sessions.session(player.getUniqueId());
         if (session == null) {
-            sender.sendMessage(Messages.error("Your minimap session is not ready yet."));
+            sender.sendMessage(Messages.error(Lang.t("not-ready")));
             return;
         }
         session.preferences().setZoom(requested);
         session.markTerrainDirty();
         store.savePreferences(player.getUniqueId(), session.preferences());
-        sender.sendMessage(Messages.success("Zoom set to " + requested
-                + " (" + requested + " block" + (requested == 1 ? "" : "s") + " per cell)."));
+        sender.sendMessage(Messages.success(Lang.t("zoom-set", requested)));
     }
 
     @Override

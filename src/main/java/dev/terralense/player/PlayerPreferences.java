@@ -39,7 +39,8 @@ public final class PlayerPreferences {
 
     /** Defaults taken from server configuration, for a first-time player. */
     public static PlayerPreferences defaultsFrom(TerraLenseConfig config) {
-        return new PlayerPreferences(config.hudEnabled(), config.orientation(),
+        // DrakesCraft: arranca apagado; cada jugador lo activa con /mapa on.
+        return new PlayerPreferences(false, config.orientation(),
                 config.defaultZoom(), config.markerPlayers());
     }
 

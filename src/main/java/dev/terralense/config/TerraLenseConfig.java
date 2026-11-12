@@ -21,6 +21,7 @@ public final class TerraLenseConfig {
     private final boolean enabled;
     private final int updateIntervalTicks;
     private final boolean joinMessage;
+    private final String language;
     private final boolean updateCheck;
     private final boolean updateNotifyAdmins;
 
@@ -68,6 +69,7 @@ public final class TerraLenseConfig {
         this.enabled = b.enabled;
         this.updateIntervalTicks = b.updateIntervalTicks;
         this.joinMessage = b.joinMessage;
+        this.language = b.language;
         this.updateCheck = b.updateCheck;
         this.updateNotifyAdmins = b.updateNotifyAdmins;
         this.hudEnabled = b.hudEnabled;
@@ -118,6 +120,7 @@ public final class TerraLenseConfig {
         b.updateIntervalTicks = v.clampInt("general.update-interval-ticks",
                 yaml.getInt("general.update-interval-ticks", 2), 1, 100, 2);
         b.joinMessage = yaml.getBoolean("general.join-message", true);
+        b.language = yaml.getString("general.language", "es");
         b.updateCheck = yaml.getBoolean("general.update-check.enabled", true);
         b.updateNotifyAdmins = yaml.getBoolean("general.update-check.notify-admins", true);
         b.debug = yaml.getBoolean("general.debug", false);
@@ -241,6 +244,10 @@ public final class TerraLenseConfig {
 
     public int updateIntervalTicks() {
         return updateIntervalTicks;
+    }
+
+    public String language() {
+        return language;
     }
 
     public boolean joinMessage() {
@@ -410,6 +417,7 @@ public final class TerraLenseConfig {
         private boolean enabled = true;
         private int updateIntervalTicks = 2;
         private boolean joinMessage = true;
+        private String language = "es";
         private boolean updateCheck = true;
         private boolean updateNotifyAdmins = true;
         private boolean hudEnabled = true;

@@ -2,6 +2,7 @@ package dev.terralense.player;
 
 import dev.terralense.compatibility.PlatformScheduler;
 import dev.terralense.config.TerraLenseConfig;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.core.UpdateChecker;
 import dev.terralense.hud.HudDelivery;
@@ -85,8 +86,9 @@ public final class PlayerListener implements Listener {
             }
             waypointMarkers.put(playerId, data.waypoints());
 
-            if (config.get().joinMessage() && player.isOnline()) {
-                player.sendMessage(Messages.info("Minimap ready. Use /terralense for controls."));
+            if (config.get().joinMessage() && player.isOnline()
+                    && !dev.terralense.compatibility.BedrockGuard.isBedrock(playerId)) {
+                player.sendMessage(Messages.info(Lang.t("join")));
             }
         }));
 

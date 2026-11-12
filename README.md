@@ -12,6 +12,34 @@ launcher and the map is just there.
 
 **[Download on SpigotMC](https://www.spigotmc.org/resources/terralense.138116/)**
 
+## Fork DrakesCraft (TerraLense-Drake)
+
+Fork de [AlphaNodesDev/TerraLense](https://github.com/AlphaNodesDev/TerraLense) (MIT, ver `LICENSE`; el
+aviso de copyright original se conserva). Cambios sobre el upstream:
+
+- **Apagado por defecto**: `PlayerPreferences.defaultsFrom` crea jugadores con el mapa desactivado; cada
+  jugador lo activa y el estado se guarda en SQLite. `hud.enabled` sigue siendo el interruptor maestro.
+- **`/mapa`** (alias `/minimapa`): `/mapa` alterna, `/mapa on|off`, `/mapa escala <n>` (= `tl zoom`),
+  `/mapa pos <left|right|center|corner>` (= `tl position`), `/mapa modo <north|player>` (= `tl mode`),
+  `/mapa grande` (= `tl map`). **`/wp`**: `add|del|list|tp <nombre>` (= `tl waypoint ...`).
+  Son alias que reescriben los argumentos y llaman a `/terralense`, asi que los permisos
+  (`terralense.use`, `.toggle`, `.waypoint`, `.waypoint.teleport`) se respetan igual. `/tl toggle` tambien
+  acepta `on|off`, y `/tl help` ahora funciona.
+- **Bedrock bloqueado**: si Floodgate esta instalado (`softdepend`, por reflexion, sin dependencia de
+  compilacion), los jugadores Bedrock reciben un mensaje claro y no pueden usar ningun comando del mapa.
+  Sin Floodgate no pasa nada.
+- **Mensajes en espanol por defecto**: `general.language: es|en` en `config.yml`; textos en
+  `src/main/resources/lang/es.yml` y `en.yml` (mismas claves, hay test). Los comandos de administracion
+  (`status`, `debug`, `reload`) siguen en ingles.
+- **Aviso de version**: el mensaje de entrada y `/mapa on` avisan: requiere cliente 26.2; versiones
+  anteriores via ViaVersion no estan garantizadas.
+
+Uso recomendado en DrakesCraft: `resource-pack.mode: external` (sin puerto 8123), los assets del pack
+fusionados en el pack del servidor, `general.update-check.enabled: false`. Para generar los assets una vez:
+`mode: generate`, `self-host.enabled: false`, `url: ''` y copiar `plugins/TerraLense/pack/TerraLense-Pack.zip`.
+
+Compilar: `./gradlew build` (Java 25). Tests: 269, todos en verde.
+
 ## Features
 
 - **Terrain map** with 21 material categories across the Overworld, Nether and End

@@ -6,6 +6,7 @@ description: Server-side minimap with terrain, rotation, markers and waypoints. 
 author: TerraLense
 website: https://www.spigotmc.org/resources/terralense.138116/
 folia-supported: false
+softdepend: [floodgate]
 
 # Downloaded by Paper at load time. Keep in sync with sqliteVersion in gradle.properties.
 libraries:
@@ -16,6 +17,13 @@ commands:
     description: TerraLense minimap controls.
     usage: /terralense help
     aliases: [tl, minimap]
+  mapa:
+    description: Minimapa - /mapa on|off|escala <n>|pos <...>|modo|grande.
+    usage: /mapa [on|off|escala|pos|modo|grande|ayuda]
+    aliases: [minimapa]
+  wp:
+    description: Waypoints - /wp add|del|list.
+    usage: /wp <add|del|list> [nombre]
 
 permissions:
   terralense.use:

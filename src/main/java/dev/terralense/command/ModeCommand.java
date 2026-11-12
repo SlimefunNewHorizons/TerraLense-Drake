@@ -1,6 +1,7 @@
 package dev.terralense.command;
 
 import dev.terralense.config.MapOrientation;
+import dev.terralense.core.Lang;
 import dev.terralense.core.Messages;
 import dev.terralense.player.MinimapSession;
 import dev.terralense.player.SessionManager;
@@ -39,7 +40,7 @@ public final class ModeCommand implements SubCommand {
 
     @Override
     public String description() {
-        return "Choose whether north or your facing direction stays up.";
+        return Lang.t("mode-desc");
     }
 
     @Override
@@ -47,7 +48,7 @@ public final class ModeCommand implements SubCommand {
         Player player = (Player) sender;
         MinimapSession session = sessions.session(player.getUniqueId());
         if (session == null) {
-            sender.sendMessage(Messages.error("Your minimap session is not ready yet."));
+            sender.sendMessage(Messages.error(Lang.t("not-ready")));
             return;
         }
 
@@ -58,8 +59,7 @@ public final class ModeCommand implements SubCommand {
         } else {
             Optional<MapOrientation> parsed = MapOrientation.fromConfig(args[0]);
             if (parsed.isEmpty()) {
-                sender.sendMessage(Messages.error("Unknown mode '" + args[0]
-                        + "'. Use 'north' or 'player'."));
+                sender.sendMessage(Messages.error(Lang.t("mode-unknown", args[0])));
                 return;
             }
             orientation = parsed.get();
@@ -72,8 +72,8 @@ public final class ModeCommand implements SubCommand {
         store.savePreferences(player.getUniqueId(), session.preferences());
 
         sender.sendMessage(Messages.success(orientation == MapOrientation.PLAYER_UP
-                ? "Map now rotates with you."
-                : "Map now keeps north at the top."));
+                ? Lang.t("mode-player")
+                : Lang.t("mode-north")));
     }
 
     @Override
